@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/assets/images/logo.png" alt="News Portal Logo" width="200">
+  <img src="public/assets/img/logo/poros fix.PNG" alt="News Portal Logo" width="200">
 </p>
 
 <h1 align="center">News Portal - Laravel News Management System</h1>
