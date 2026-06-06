@@ -101,7 +101,9 @@
         body {
             font-family: var(--font-body);
             color: var(--text-main);
-            background: var(--off-white);
+            background-color: var(--off-white);
+            background-image: radial-gradient(rgba(37, 99, 168, 0.04) 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
             line-height: 1.6;
         }
 
@@ -785,6 +787,7 @@
             .pkr-section-title h3 { font-size: 18px; }
         }
     </style>
+    @stack('head')
 </head>
 
 <body>
@@ -888,6 +891,9 @@
                 <li>
                     <a href="{{ route('news.index') }}" class="{{ request()->routeIs('news.index') ? 'active' : '' }}">Semua Berita</a>
                 </li>
+                <li>
+                    <a href="gema-kieraha.poros-kieraha.com" target="_blank">Gema Kie Raha</a>
+                </li>
                 @if($globalCategories->count() > 0)
                 <li>
                     <a href="#">Kategori</a>
@@ -927,6 +933,133 @@
 </header>
 <!-- ======== /HEADER ======== -->
 
+{{-- ============ POPUP IKLAN PREMIUM ============ --}}
+@php
+    $premiumAd = \App\Models\Ad::active()->premium()->ordered()->first();
+@endphp
+@if($premiumAd)
+<div id="premium-ad-overlay" style="display:none;" aria-modal="true" role="dialog">
+    <div id="premium-ad-box">
+        <button id="premium-ad-close" aria-label="Tutup iklan">&times;</button>
+        <div id="premium-ad-timer-bar">
+            <div id="premium-ad-timer-fill"></div>
+        </div>
+        @if($premiumAd->link)
+            <a href="{{ route('ad.click', $premiumAd) }}" target="_blank" rel="noopener noreferrer" id="premium-ad-link">
+                <img src="{{ $premiumAd->image_url }}" alt="{{ $premiumAd->title ?? 'Iklan Premium' }}" id="premium-ad-img">
+            </a>
+        @else
+            <img src="{{ $premiumAd->image_url }}" alt="{{ $premiumAd->title ?? 'Iklan Premium' }}" id="premium-ad-img">
+        @endif
+        @if($premiumAd->title)
+            <p id="premium-ad-title">{{ $premiumAd->title }}</p>
+        @endif
+        <p id="premium-ad-countdown">Iklan akan tutup otomatis dalam <span id="premium-ad-secs">10</span> detik</p>
+    </div>
+</div>
+<style>
+#premium-ad-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.65);
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInOverlay .4s ease;
+}
+#premium-ad-box {
+    position: relative;
+    background: #fff;
+    border-radius: 16px;
+    max-width: 520px;
+    width: 92%;
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    animation: slideUpBox .4s cubic-bezier(.22,1,.36,1);
+}
+#premium-ad-timer-bar {
+    height: 4px;
+    background: var(--gray-200, #E2E6EA);
+}
+#premium-ad-timer-fill {
+    height: 4px;
+    background: var(--red, #C0392B);
+    width: 100%;
+    transition: width 1s linear;
+}
+#premium-ad-close {
+    position: absolute;
+    top: 10px; right: 12px;
+    background: rgba(0,0,0,.55);
+    border: none;
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s;
+}
+#premium-ad-close:hover { background: var(--red, #C0392B); }
+#premium-ad-img { width: 100%; display: block; max-height: 360px; object-fit: cover; }
+#premium-ad-link { display: block; }
+#premium-ad-title {
+    margin: 14px 18px 4px;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--blue, #1A3A5C);
+}
+#premium-ad-countdown {
+    margin: 4px 18px 14px;
+    font-size: 12.5px;
+    color: var(--gray-600, #555E6B);
+}
+@keyframes fadeInOverlay { from { opacity:0 } to { opacity:1 } }
+@keyframes slideUpBox    { from { transform:translateY(40px);opacity:0 } to { transform:translateY(0);opacity:1 } }
+</style>
+<script>
+(function () {
+    var SESSION_KEY = 'pkr_popup_shown_{{ $premiumAd->id }}';
+    if (sessionStorage.getItem(SESSION_KEY)) return; // sudah ditampilkan sesi ini
+
+    var overlay  = document.getElementById('premium-ad-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'flex'; // Tampilkan overlay
+
+    var fill     = document.getElementById('premium-ad-timer-fill');
+    var secsEl   = document.getElementById('premium-ad-secs');
+    var closeBtn = document.getElementById('premium-ad-close');
+    var secs     = 10;
+    var timer;
+
+    function closePopup() {
+        clearInterval(timer);
+        overlay.style.animation = 'fadeInOverlay .3s ease reverse';
+        setTimeout(function () { overlay.style.display = 'none'; }, 280);
+        sessionStorage.setItem(SESSION_KEY, '1');
+    }
+
+    closeBtn.addEventListener('click', closePopup);
+    overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closePopup();
+    });
+
+    // Countdown & timer bar
+    fill.style.width = '100%';
+    timer = setInterval(function () {
+        secs--;
+        secsEl.textContent = secs;
+        fill.style.width = (secs / 10 * 100) + '%';
+        if (secs <= 0) closePopup();
+    }, 1000);
+}());
+</script>
+@endif
+{{-- ============ /POPUP IKLAN PREMIUM ============ --}}
+
 <main>
     @yield('content')
 </main>
@@ -963,12 +1096,70 @@
                 </ul>
             </div>
             <div class="col-lg-3 col-md-5 mb-5">
-                <h4>Tautan Cepat</h4>
-                <ul>
-                    <li><a href="{{ route('home') }}">Beranda</a></li>
-                    <li><a href="{{ route('news.index') }}">Semua Berita</a></li>
-                    <li><a href="{{ route('news.search') }}">Pencarian</a></li>
+                <h4>Statistik Pengunjung</h4>
+                @php
+                    $vToday = \App\Models\SiteVisit::countToday();
+                    $vWeek  = \App\Models\SiteVisit::countWeek();
+                    $vMonth = \App\Models\SiteVisit::countMonth();
+                    $vYear  = \App\Models\SiteVisit::countYear();
+                @endphp
+                <ul class="visitor-stats-list">
+                    <li>
+                        <span class="vs-label"><i class="fas fa-eye"></i> Hari Ini</span>
+                        <span class="vs-count">{{ number_format($vToday) }}</span>
+                    </li>
+                    <li>
+                        <span class="vs-label"><i class="fas fa-calendar-week"></i> Minggu Ini</span>
+                        <span class="vs-count">{{ number_format($vWeek) }}</span>
+                    </li>
+                    <li>
+                        <span class="vs-label"><i class="fas fa-calendar-alt"></i> Bulan Ini</span>
+                        <span class="vs-count">{{ number_format($vMonth) }}</span>
+                    </li>
+                    <li>
+                        <span class="vs-label"><i class="fas fa-calendar"></i> Tahun Ini</span>
+                        <span class="vs-count">{{ number_format($vYear) }}</span>
+                    </li>
                 </ul>
+                <div class="mt-4 p-3 rounded" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);">
+                    <h5 class="text-white mb-2" style="font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:rgba(255,255,255,0.85); margin-bottom: 10px;">Info Koneksi Anda</h5>
+                    <div style="font-size:12px; color:rgba(255,255,255,0.6); display: flex; flex-direction: column; gap: 6px;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-network-wired" style="color:var(--red); margin-right:6px; width:14px; text-align:center;"></i> IP Anda</span>
+                            <strong style="color:#fff;">{{ request()->ip() }}</strong>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-laptop" style="color:var(--red); margin-right:6px; width:14px; text-align:center;"></i> Perangkat</span>
+                            <strong style="color:#fff; text-align:right;" title="{{ request()->userAgent() }}">
+                                @php
+                                    $ua = request()->userAgent() ?? '';
+                                    if (preg_match('/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i', $ua)) {
+                                        $device = 'Tablet';
+                                    } elseif (preg_match('/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|NetFront|Silk-Accelerated|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune/i', $ua)) {
+                                        $device = 'Smartphone';
+                                    } else {
+                                        $device = 'Desktop';
+                                    }
+                                    
+                                    // detect browser
+                                    $browser = 'Browser';
+                                    if (strpos($ua, 'OPR') !== false || strpos($ua, 'Opera') !== false) {
+                                        $browser = 'Opera';
+                                    } elseif (strpos($ua, 'Chrome') !== false) {
+                                        $browser = 'Chrome';
+                                    } elseif (strpos($ua, 'Safari') !== false) {
+                                        $browser = 'Safari';
+                                    } elseif (strpos($ua, 'Firefox') !== false) {
+                                        $browser = 'Firefox';
+                                    } elseif (strpos($ua, 'MSIE') !== false || strpos($ua, 'Trident') !== false) {
+                                        $browser = 'IE';
+                                    }
+                                @endphp
+                                {{ $device }} ({{ $browser }})
+                            </strong>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -985,6 +1176,73 @@
         </div>
     </div>
 </footer>
+
+{{-- ============ IKLAN FOOTER (full-width) ============ --}}
+@php
+    $footerAds = \App\Models\Ad::active()->footer()->ordered()->get();
+@endphp
+@if($footerAds->count() > 0)
+<div class="pkr-footer-ads">
+    @foreach($footerAds as $fAd)
+    <div class="pkr-footer-ad-item">
+        @if($fAd->link)
+            <a href="{{ route('ad.click', $fAd) }}" target="_blank" rel="noopener noreferrer">
+                <img src="{{ $fAd->image_url }}" alt="{{ $fAd->title ?? 'Iklan' }}">
+            </a>
+        @else
+            <img src="{{ $fAd->image_url }}" alt="{{ $fAd->title ?? 'Iklan' }}">
+        @endif
+    </div>
+    @endforeach
+</div>
+@endif
+{{-- ============ /IKLAN FOOTER ============ --}}
+<style>
+/* Visitor stats di footer */
+.visitor-stats-list { list-style: none; padding: 0; margin: 0; }
+.visitor-stats-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 13.5px;
+}
+.visitor-stats-list li:last-child { border-bottom: none; }
+.vs-label {
+    color: rgba(255,255,255,0.65);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.vs-label i { color: var(--red, #C0392B); font-size: 12px; }
+.vs-count {
+    font-weight: 700;
+    color: #fff;
+    background: rgba(255,255,255,0.10);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+/* Footer ads */
+.pkr-footer-ads {
+    background: #f0f2f5;
+    padding: 18px 0;
+    text-align: center;
+}
+.pkr-footer-ad-item {
+    display: inline-block;
+    margin: 4px 8px;
+}
+.pkr-footer-ad-item img {
+    max-height: 90px;
+    max-width: 728px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+</style>
 <!-- ======== /FOOTER ======== -->
 
 <!-- Mobile Bottom Nav -->

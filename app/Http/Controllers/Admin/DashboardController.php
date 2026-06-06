@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\News;
+use App\Models\SiteVisit;
 use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -109,6 +110,14 @@ class DashboardController extends Controller
         }
         $recentComments = $commentsQuery->limit(10)->get();
 
+        // Visitor Statistics
+        $visitorToday   = SiteVisit::countToday();
+        $visitorWeek    = SiteVisit::countWeek();
+        $visitorMonth   = SiteVisit::countMonth();
+        $visitorYear    = SiteVisit::countYear();
+        $visitorTotal   = SiteVisit::countTotal();
+        $visitorChart   = SiteVisit::dailyLast30Days();
+
         return view('admin.dashboard', compact(
             // Basic stats
             'totalNews',
@@ -130,7 +139,15 @@ class DashboardController extends Controller
             'thisMonth',
             'lastMonth',
             'monthlyGrowth',
-            'recentComments'
+            'recentComments',
+
+            // Visitor stats
+            'visitorToday',
+            'visitorWeek',
+            'visitorMonth',
+            'visitorYear',
+            'visitorTotal',
+            'visitorChart'
         ));
     }
 }

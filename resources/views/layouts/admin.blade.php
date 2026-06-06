@@ -353,6 +353,17 @@
                     <!-- Divider -->
                     <div class="my-4 border-t border-gray-700"></div>
 
+                    <!-- YouTube Videos (Admin saja) -->
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('admin.youtube-videos.index') }}"
+                           class="menu-item flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800/50 hover:text-white rounded-lg transition-all group {{ request()->routeIs('admin.youtube-videos.*') ? 'active bg-gray-800 text-white font-semibold' : '' }}">
+                            <i class="fab fa-youtube w-5 text-center mr-3 {{ request()->routeIs('admin.youtube-videos.*') ? 'text-red-400' : 'group-hover:text-red-400' }}"></i>
+                            <span>YouTube Videos</span>
+                        </a>
+
+                        <div class="my-4 border-t border-gray-700"></div>
+                    @endif
+
                     <!-- Lihat Website -->
                     <a href="{{ route('home') }}" target="_blank"
                        class="menu-item flex items-center px-4 py-3 text-gray-300 hover:bg-green-800/30 hover:text-green-400 rounded-lg transition-all group">

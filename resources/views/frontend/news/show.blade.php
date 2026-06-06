@@ -14,6 +14,38 @@
     @section('twitter_image', url(asset('assets/img/logo/poros fix.PNG')))
 @endif
 
+@push('head')
+<script type="application/ld+json">
+{!! json_encode([
+    '@context' => 'https://schema.org',
+    '@type' => 'NewsArticle',
+    'mainEntityOfPage' => [
+        '@type' => 'WebPage',
+        '@id' => route('news.show', $news->slug)
+    ],
+    'headline' => $news->title,
+    'image' => [
+        $news->image ? url(Storage::url($news->image)) : url(asset('assets/img/logo/poros fix.PNG'))
+    ],
+    'datePublished' => $news->published_at ? $news->published_at->toIso8601String() : $news->created_at->toIso8601String(),
+    'dateModified' => $news->updated_at->toIso8601String(),
+    'author' => [
+        '@type' => 'Person',
+        'name' => $news->user->name
+    ],
+    'publisher' => [
+        '@type' => 'Organization',
+        'name' => 'Poros Kie Raha',
+        'logo' => [
+            '@type' => 'ImageObject',
+            'url' => url(asset('assets/img/logo/poros fix.PNG'))
+        ]
+    ],
+    'description' => $news->excerpt ?: Str::limit(strip_tags($news->content), 150)
+], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) !!}
+</script>
+@endpush
+
 @section('content')
 <!-- Preloader -->
 <div id="preloader-active">
@@ -86,6 +118,27 @@
                     <div class="pkr-article-content">
                         {!! $news->content !!}
                     </div>
+
+                    {{-- ============ IKLAN CONTENT (bawah artikel) ============ --}}
+                    @php
+                        $detailContentAds = \App\Models\Ad::active()->content()->ordered()->get();
+                    @endphp
+                    @if($detailContentAds->count() > 0)
+                    <div class="pkr-article-content-ads my-4">
+                        @foreach($detailContentAds as $cAd)
+                        <div class="pkr-article-content-ad-item text-center mb-3">
+                            <small class="ad-label d-block text-muted text-uppercase mb-1" style="font-size: 10px; letter-spacing: 0.05em; color: #888;">Iklan</small>
+                            @if($cAd->link)
+                                <a href="{{ route('ad.click', $cAd) }}" target="_blank" rel="noopener noreferrer">
+                                    <img src="{{ $cAd->image_url }}" alt="{{ $cAd->title ?? 'Iklan' }}" class="img-fluid rounded shadow-sm" style="max-height: 120px; width: 100%; object-fit: cover; max-width: 728px;">
+                                </a>
+                            @else
+                                <img src="{{ $cAd->image_url }}" alt="{{ $cAd->title ?? 'Iklan' }}" class="img-fluid rounded shadow-sm" style="max-height: 120px; width: 100%; object-fit: cover; max-width: 728px;">
+                            @endif
+                        </div>
+                        @endforeach
+                    </div>
+                    @endif
 
                     <!-- Tags -->
                     @if($news->tags->count() > 0)

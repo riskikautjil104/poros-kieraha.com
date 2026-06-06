@@ -37,6 +37,7 @@ class AdController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'position' => 'required|in:sidebar,content,footer',
             'is_active' => 'boolean',
+            'is_premium' => 'boolean',
             'sort_order' => 'integer|min:0'
         ]);
 
@@ -65,6 +66,7 @@ class AdController extends Controller
             'image' => $imagePath,
             'position' => $request->position,
             'is_active' => $request->boolean('is_active'),
+            'is_premium' => $request->boolean('is_premium'),
             'sort_order' => $request->sort_order ?? 0
         ]);
 
@@ -106,7 +108,7 @@ class AdController extends Controller
             if ($ad->image && file_exists(public_path('assets/img/ads/' . $ad->image))) {
                 unlink(public_path('assets/img/ads/' . $ad->image));
             }
-            
+
             $filename = time() . '_' . $request->file('image')->getClientOriginalName();
             $request->file('image')->move(public_path('assets/img/ads'), $filename);
             $imagePath = $filename;
@@ -118,6 +120,7 @@ class AdController extends Controller
             'image' => $imagePath,
             'position' => $request->position,
             'is_active' => $request->boolean('is_active'),
+            'is_premium' => $request->boolean('is_premium'),
             'sort_order' => $request->sort_order ?? 0
         ]);
 
@@ -147,11 +150,11 @@ class AdController extends Controller
     public function click(Ad $ad)
     {
         $ad->incrementClick();
-        
+
         if ($ad->link) {
             return redirect($ad->link);
         }
-        
+
         return redirect()->back();
     }
 }

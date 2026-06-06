@@ -102,6 +102,23 @@
                   </label>
                </div>
             </div>
+
+            <!-- Is Premium -->
+            <div>
+               <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Premium Popup <span class="text-red-500">*</span>
+               </label>
+               <div class="flex items-center">
+                  <input type="checkbox" name="is_premium" id="is_premium" value="1" {{ old('is_premium', false) ? 'checked' : '' }}
+                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                  <label for="is_premium" class="ml-2 block text-sm text-gray-900">
+                     Tampilkan sebagai iklan premium (popup)
+                  </label>
+               </div>
+               <p class="text-sm text-gray-500 mt-1">
+                  Jika dicentang, iklan ini bisa muncul di popup saat pengunjung pertama kali membuka web.
+               </p>
+            </div>
          </div>
 
          <div class="mt-6 flex justify-end">

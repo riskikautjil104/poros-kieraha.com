@@ -15,12 +15,14 @@ class Ad extends Model
         'image',
         'position',
         'is_active',
+        'is_premium',
         'sort_order',
         'click_count'
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_premium' => 'boolean',
         'sort_order' => 'integer',
         'click_count' => 'integer'
     ];
@@ -50,6 +52,30 @@ class Ad extends Model
     }
 
     /**
+     * Scope for content position
+     */
+    public function scopeContent($query)
+    {
+        return $query->where('position', 'content');
+    }
+
+    /**
+     * Scope for footer position
+     */
+    public function scopeFooter($query)
+    {
+        return $query->where('position', 'footer');
+    }
+
+    /**
+     * Scope for premium popup ads
+     */
+    public function scopePremium($query)
+    {
+        return $query->where('is_premium', true);
+    }
+
+    /**
      * Get the image URL
      */
     public function getImageUrlAttribute()
@@ -57,7 +83,7 @@ class Ad extends Model
         if (!$this->image) {
             return asset('assets/img/news/news_card.jpg'); // default image
         }
-        
+
         return asset('assets/img/ads/' . $this->image);
     }
 

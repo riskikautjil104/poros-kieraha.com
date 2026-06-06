@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Models\News;
 use App\Models\Category;
+use App\Models\YoutubeVideo;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -35,7 +36,7 @@ class HomeController extends Controller
 //         return view('frontend.home', compact('featuredNews', 'popularNews', 'categories'));
 //     }
 // }
- /**
+    /**
      * Homepage
      */
     public function index()
@@ -77,7 +78,7 @@ class HomeController extends Controller
 
         // Categories with news count
         $categories = Category::withCount([
-            'news' => function($query) {
+            'news' => function ($query) {
                 $query->published();
             }
         ])
@@ -92,6 +93,12 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
 
+        // YouTube Videos (sidebar/home, ambil yang aktif)
+        $youtubeVideos = YoutubeVideo::active()
+            ->ordered()
+            ->limit(2)
+            ->get();
+
         return view('frontend.home', compact(
             'featuredNews',
             'trendingNews',
@@ -99,7 +106,8 @@ class HomeController extends Controller
             'weeklyNews',
             'latestNews',
             'categories',
-            'recentArticles'
+            'recentArticles',
+            'youtubeVideos'
         ));
     }
 
@@ -112,10 +120,10 @@ class HomeController extends Controller
 
         // Search
         if ($request->has('q') && $request->q != '') {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('title', 'like', '%' . $request->q . '%')
-                  ->orWhere('content', 'like', '%' . $request->q . '%')
-                  ->orWhere('excerpt', 'like', '%' . $request->q . '%');
+                    ->orWhere('content', 'like', '%' . $request->q . '%')
+                    ->orWhere('excerpt', 'like', '%' . $request->q . '%');
             });
         }
 
@@ -134,47 +142,47 @@ class HomeController extends Controller
 
         $news = $query->paginate(12);
         $categories = Category::withCount([
-            'news' => function($query) {
+            'news' => function ($query) {
                 $query->published();
             }
         ])->get();
 
         return view('frontend.news.index', compact('news', 'categories'));
     }
-/**
- * News Detail
- */
-public function newsShow($slug)
-{
-    $news = News::where('slug', $slug)
-        ->where('status', 'published')
-        ->with(['category', 'user', 'tags', 'comments.user'])
-        ->firstOrFail();
+    /**
+     * News Detail
+     */
+    public function newsShow($slug)
+    {
+        $news = News::where('slug', $slug)
+            ->where('status', 'published')
+            ->with(['category', 'user', 'tags', 'comments.user'])
+            ->firstOrFail();
 
-    // Increment views
-    $news->incrementViews();
+        // Increment views
+        $news->incrementViews();
 
-    // Related News (berita serupa berdasarkan kategori)
-    $relatedNews = News::published()
-        ->where('category_id', $news->category_id)
-        ->where('id', '!=', $news->id)
-        ->limit(4)
-        ->get();
+        // Related News (berita serupa berdasarkan kategori)
+        $relatedNews = News::published()
+            ->where('category_id', $news->category_id)
+            ->where('id', '!=', $news->id)
+            ->limit(4)
+            ->get();
 
-    // Popular News
-    $popularNews = News::published()
-        ->orderBy('views', 'desc')
-        ->limit(5)
-        ->get();
+        // Popular News
+        $popularNews = News::published()
+            ->orderBy('views', 'desc')
+            ->limit(5)
+            ->get();
 
-    // Categories with count
-    $categories = Category::withCount('news')
-        ->having('news_count', '>', 0)
-        ->orderBy('news_count', 'desc')
-        ->get();
+        // Categories with count
+        $categories = Category::withCount('news')
+            ->having('news_count', '>', 0)
+            ->orderBy('news_count', 'desc')
+            ->get();
 
-    return view('frontend.news.show', compact('news', 'relatedNews', 'popularNews', 'categories'));
-}
+        return view('frontend.news.show', compact('news', 'relatedNews', 'popularNews', 'categories'));
+    }
     // /**
     //  * News Detail
     //  */
@@ -218,7 +226,7 @@ public function newsShow($slug)
             ->paginate(12);
 
         $categories = Category::withCount([
-            'news' => function($query) {
+            'news' => function ($query) {
                 $query->published();
             }
         ])->get();
@@ -235,16 +243,16 @@ public function newsShow($slug)
 
         $news = News::published()
             ->with(['category', 'user'])
-            ->where(function($q) use ($query) {
+            ->where(function ($q) use ($query) {
                 $q->where('title', 'like', '%' . $query . '%')
-                  ->orWhere('content', 'like', '%' . $query . '%')
-                  ->orWhere('excerpt', 'like', '%' . $query . '%');
+                    ->orWhere('content', 'like', '%' . $query . '%')
+                    ->orWhere('excerpt', 'like', '%' . $query . '%');
             })
             ->latest('published_at')
             ->paginate(12);
 
         $categories = Category::withCount([
-            'news' => function($query) {
+            'news' => function ($query) {
                 $query->published();
             }
         ])->get();

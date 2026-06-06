@@ -192,6 +192,46 @@
         </div>
     </div>
 
+    <!-- Visitor Statistics Section (Admin Only) -->
+    @if(auth()->user()->isAdmin())
+    <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+        <div class="p-6">
+            <h3 class="text-lg font-bold mb-4">👥 Statistik Pengunjung (30 Hari Terakhir)</h3>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                <div class="text-center p-4 bg-indigo-50 rounded shadow-sm">
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Hari Ini</p>
+                    <p class="text-2xl font-bold text-indigo-600 mt-1">{{ number_format($visitorToday) }}</p>
+                    <p class="text-xxs text-gray-400 mt-1">pengunjung unik</p>
+                </div>
+                <div class="text-center p-4 bg-green-50 rounded shadow-sm">
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Minggu Ini</p>
+                    <p class="text-2xl font-bold text-green-600 mt-1">{{ number_format($visitorWeek) }}</p>
+                    <p class="text-xxs text-gray-400 mt-1">pengunjung unik</p>
+                </div>
+                <div class="text-center p-4 bg-yellow-50 rounded shadow-sm">
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Bulan Ini</p>
+                    <p class="text-2xl font-bold text-yellow-600 mt-1">{{ number_format($visitorMonth) }}</p>
+                    <p class="text-xxs text-gray-400 mt-1">pengunjung unik</p>
+                </div>
+                <div class="text-center p-4 bg-red-50 rounded shadow-sm">
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Tahun Ini</p>
+                    <p class="text-2xl font-bold text-red-600 mt-1">{{ number_format($visitorYear) }}</p>
+                    <p class="text-xxs text-gray-400 mt-1">pengunjung unik</p>
+                </div>
+                <div class="text-center p-4 bg-purple-50 rounded shadow-sm col-span-2 md:col-span-1">
+                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wider">Total</p>
+                    <p class="text-2xl font-bold text-purple-600 mt-1">{{ number_format($visitorTotal) }}</p>
+                    <p class="text-xxs text-gray-400 mt-1">sejak awal</p>
+                </div>
+            </div>
+            
+            <div class="mt-4" style="position: relative; height: 300px;">
+                <canvas id="visitorChart"></canvas>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Charts Row -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- News by Category Chart -->
@@ -449,5 +489,36 @@
             }
         }
     });
+
+    // Visitor Chart (Admin Only)
+    @if(auth()->user()->isAdmin())
+    const visitorCtx = document.getElementById('visitorChart').getContext('2d');
+    new Chart(visitorCtx, {
+        type: 'line',
+        data: {
+            labels: {!! json_encode(collect($visitorChart)->pluck('label')) !!},
+            datasets: [{
+                label: 'Pengunjung Unik',
+                data: {!! json_encode(collect($visitorChart)->pluck('total')) !!},
+                borderColor: 'rgb(79, 70, 229)',
+                backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+    @endif
 </script>
 @endsection

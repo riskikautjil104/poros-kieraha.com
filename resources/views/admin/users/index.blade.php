@@ -20,6 +20,7 @@
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Verifikasi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bergabung</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
@@ -30,7 +31,27 @@
                                 <tr>
                                     <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $user->name }}</td>
                                     <td class="px-6 py-4 text-sm text-gray-500">{{ $user->email }}</td>
-                                    <td class="px-6 py-4">
+                                    <td class="px-6 py-4 text-sm">
+                                        @if($user->is_verified)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                <i class="fas fa-check-circle mr-1"></i> Verified
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800 mb-1">
+                                                <i class="fas fa-exclamation-circle mr-1"></i> Unverified
+                                            </span>
+                                            @if($user->role !== 'admin') {{-- Admin tidak perlu diverifikasi karena otomatis bypass --}}
+                                            <form action="{{ route('admin.users.verify', $user) }}" method="POST" class="block">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit" onclick="return confirm('Verifikasi email user {{ $user->name }} secara manual?')" class="text-xs text-indigo-600 hover:text-indigo-900 underline font-medium">
+                                                    Verifikasi Manual
+                                                </button>
+                                            </form>
+                                            @endif
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-500">
                                         <span class="px-2 py-1 text-xs rounded {{ $user->role == 'admin' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800' }}">
                                             {{ ucfirst($user->role) }}
                                         </span>

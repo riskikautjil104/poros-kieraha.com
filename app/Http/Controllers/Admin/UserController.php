@@ -73,4 +73,20 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus!');
     }
+
+    /**
+     * Manually verify a user's email address.
+     */
+    public function verify(User $user)
+    {
+        $user->update([
+            'is_verified' => true,
+            'email_verification_token' => null,
+            'email_verification_token_expires_at' => null,
+            'email_verified_at' => now(),
+        ]);
+
+        return redirect()->route('admin.users.index')
+            ->with('success', "Email untuk user {$user->name} berhasil diverifikasi secara manual!");
+    }
 }

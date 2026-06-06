@@ -1,73 +1,78 @@
-@extends('layouts.app')
+@extends('frontend.layout')
 
 @section('title', 'Verifikasi Email')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8">
-        <div>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+<div style="min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 16px; background:var(--off-white);">
+
+    <div style="background:var(--white); border-radius:12px; border:1px solid var(--gray-200); box-shadow:var(--shadow-md); max-width:460px; width:100%; overflow:hidden;">
+
+        {{-- Header biru dengan ikon --}}
+        <div style="background:var(--blue); padding:32px 32px 28px; text-align:center;">
+            <div style="width:72px; height:72px; border-radius:50%; background:rgba(255,255,255,.12); border:2px solid rgba(255,255,255,.25); display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
+                <i class="fas fa-envelope" style="font-size:30px; color:#fff;"></i>
+            </div>
+            <h2 style="font-family:var(--font-display); font-size:22px; font-weight:700; color:#fff; margin:0 0 6px;">
                 Verifikasi Email Anda
             </h2>
-            <p class="mt-2 text-center text-sm text-gray-600">
-                Kami telah mengirim link verifikasi ke email Anda. Klik link tersebut untuk mengaktifkan akun Anda.
+            <p style="font-size:13.5px; color:rgba(255,255,255,.72); margin:0;">
+                Satu langkah lagi untuk mengaktifkan akun Anda
             </p>
         </div>
 
-        <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <div class="text-center">
-                <svg class="mx-auto h-12 w-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 48 48"
-                    aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-                <h3 class="mt-2 text-sm font-medium text-gray-900">Periksa Email Anda</h3>
-                <p class="mt-1 text-sm text-gray-500">
-                    Link verifikasi telah dikirim ke <strong>{{ auth()->user()->email }}</strong>
-                </p>
+        {{-- Body --}}
+        <div style="padding:28px 32px 32px;">
+
+            {{-- Alert sukses --}}
+            @if(session('status') == 'verification-link-sent')
+            <div style="background:#e8f5e9; border:1px solid #a5d6a7; border-radius:var(--radius-md); padding:12px 16px; font-size:13px; color:#2e7d32; margin-bottom:20px; display:flex; gap:10px; align-items:flex-start;">
+                <i class="fas fa-check-circle" style="margin-top:2px; flex-shrink:0;"></i>
+                <span>Email verifikasi berhasil dikirim ulang. Periksa folder <strong>Spam</strong> jika tidak muncul di Inbox.</span>
+            </div>
+            @endif
+
+            {{-- Info email --}}
+            <div style="background:var(--off-white); border:1px solid var(--gray-200); border-left:4px solid var(--blue-mid); border-radius:0 var(--radius-md) var(--radius-md) 0; padding:14px 16px; margin-bottom:24px; font-size:13.5px; color:var(--text-soft);">
+                Link verifikasi telah dikirim ke <strong style="color:var(--text-main);">{{ auth()->user()->email }}</strong>
             </div>
 
-            <div class="mt-6">
-                <form method="POST" action="{{ route('verification.send') }}">
-                    @csrf
-                    <button type="submit"
-                        class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Kirim Ulang Email Verifikasi
-                    </button>
-                </form>
-                @if (session('success'))
-                <div class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-                    {{ session('success') }}
-                </div>
-                @endif
-                @if (session('error'))
-                <div class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-                    {{ session('error') }}
-                </div>
-                @endif
+            {{-- Langkah-langkah --}}
+            <ul style="list-style:none; margin:0 0 24px; padding:0; display:flex; flex-direction:column; gap:10px;">
+                @foreach([['Buka aplikasi email Anda'], ['Cari email dari Poros Kie Raha'], ['Klik tombol verifikasi di dalam email']] as $i => $step)
+                <li style="display:flex; align-items:flex-start; gap:12px; font-size:13px; color:var(--gray-600);">
+                    <span style="width:22px; height:22px; border-radius:50%; background:var(--blue); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px;">
+                        {{ $i + 1 }}
+                    </span>
+                    {{ $step[0] }}
+                </li>
+                @endforeach
+            </ul>
+
+            {{-- Tombol kirim ulang --}}
+            <form method="POST" action="{{ route('verification.send') }}">
+                @csrf
+                <button type="submit" class="btn-pkr-primary" style="width:100%; justify-content:center; margin-bottom:12px;">
+                    <i class="fas fa-paper-plane"></i> Kirim Ulang Email Verifikasi
+                </button>
+            </form>
+
+            {{-- Divider --}}
+            <div style="display:flex; align-items:center; gap:12px; margin:20px 0;">
+                <div style="flex:1; height:1px; background:var(--gray-200);"></div>
+                <span style="font-size:12px; color:var(--gray-400);">atau</span>
+                <div style="flex:1; height:1px; background:var(--gray-200);"></div>
             </div>
 
-            <div class="mt-6">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-500">Atau</span>
-                    </div>
-                </div>
+            {{-- Tombol logout --}}
+            <form id="logout-form" action="{{ route('logout') }}" method="POST">
+                @csrf
+            </form>
+            <button onclick="document.getElementById('logout-form').submit()" class="btn-pkr-outline" style="width:100%; justify-content:center;">
+                <i class="fas fa-sign-out-alt"></i> Keluar &amp; Login Ulang
+            </button>
 
-                <div class="mt-6 text-center">
-                    <a href="{{ route('logout') }}" class="font-medium text-indigo-600 hover:text-indigo-500"
-                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        Keluar dan Login Lagi
-                    </a>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                        @csrf
-                    </form>
-                </div>
-            </div>
         </div>
     </div>
+
 </div>
 @endsection

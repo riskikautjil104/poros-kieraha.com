@@ -244,6 +244,55 @@
 </div>
 <!-- End Weekly-News -->
 
+{{-- ============ IKLAN CONTENT (di antara section) ============ --}}
+@php
+    $contentAds = \App\Models\Ad::active()->content()->ordered()->get();
+@endphp
+@if($contentAds->count() > 0)
+<div class="content-ads-wrap py-3">
+    <div class="container">
+        <div class="content-ads-inner">
+            @foreach($contentAds as $cAd)
+            <div class="content-ad-item">
+                <small class="ad-label">Iklan</small>
+                @if($cAd->link)
+                    <a href="{{ route('ad.click', $cAd) }}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{ $cAd->image_url }}" alt="{{ $cAd->title ?? 'Iklan' }}">
+                    </a>
+                @else
+                    <img src="{{ $cAd->image_url }}" alt="{{ $cAd->title ?? 'Iklan' }}">
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </div>
+</div>
+<style>
+.content-ads-wrap { background: #f8f9fa; border-top: 1px solid #e2e6ea; border-bottom: 1px solid #e2e6ea; }
+.content-ads-inner { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; }
+.content-ad-item { position: relative; text-align: center; }
+.content-ad-item .ad-label {
+    display: block;
+    font-size: 10px;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 4px;
+}
+.content-ad-item img {
+    max-height: 100px;
+    max-width: 728px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    transition: transform .25s, box-shadow .25s;
+}
+.content-ad-item img:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.13); }
+</style>
+@endif
+{{-- ============ /IKLAN CONTENT ============ --}}
+
 <!-- Whats New Start -->
 <section class="whats-news-area pt-50 pb-20">
     <div class="container">
@@ -346,45 +395,36 @@
                 </div>
             </div>
 <!-- Sidebar -->
-<div class="col-lg-4">
+    <div class="col-lg-4">
     <!-- YouTube Video -->
     <div class="section-tittle mb-30">
         <h3><i class="fab fa-youtube"></i> Video Terbaru</h3>
     </div>
-    <div class="youtube-video-wrapper mb-45">
-        <!-- Video 1 -->
-        <div class="single-video mb-30">
-            <div class="video-frame">
-                <iframe 
-                    src="https://www.youtube.com/embed/VIDEO_ID_1" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <div class="video-caption">
-                <h5>Launching Website Poros Kie Raha</h5>
-                <p class="video-desc">Deskripsi singkat Poros Kieraha..</p>
-            </div>
-        </div>
 
-        <!-- Video 2 -->
-        <div class="single-video mb-30">
-            <div class="video-frame">
-                <iframe 
-                    src="https://www.youtube.com/embed/VIDEO_ID_2" 
-                    title="YouTube video player" 
-                    frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                    allowfullscreen>
-                </iframe>
-            </div>
-            <div class="video-caption">
-                <h5>Podcasth Terbaru</h5>
-                <p class="video-desc">Podcasth Terbaik...</p>
-            </div>
-        </div>
+    <div class="youtube-video-wrapper mb-45">
+        @if(isset($youtubeVideos) && $youtubeVideos->count() > 0)
+            @foreach($youtubeVideos as $video)
+                <div class="single-video mb-30">
+                    <div class="video-frame">
+                        @if($video->embed_url)
+                            <iframe
+                                src="{{ $video->embed_url }}"
+                                title="YouTube video player"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowfullscreen>
+                            </iframe>
+                        @endif
+                    </div>
+                    <div class="video-caption">
+                        <h5>{{ $video->title }}</h5>
+                        <p class="video-desc">{{ $video->description ? Str::limit($video->description, 90) : '-' }}</p>
+                    </div>
+                </div>
+            @endforeach
+        @else
+            <p class="text-sm text-gray-500">Belum ada video YouTube.</p>
+        @endif
     </div>
 
     <!-- News Poster / Iklan -->

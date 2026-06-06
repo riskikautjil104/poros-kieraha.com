@@ -19,13 +19,53 @@ class NewsPublicController extends Controller
             ->latest('published_at')
             ->paginate(12);
 
-        $categories = Category::withCount(['news' => function($query) {
+        $categories = Category::withCount(['news' => function ($query) {
             $query->where('status', 'published');
         }])->get();
 
-        return view('frontend.news.index', compact('news', 'categories'));
+        // Data tambahan untuk view index (hero/trending/weekly/latest/sidebar)
+        $featuredNews = News::published()
+            ->with(['category', 'user'])
+            ->orderBy('views', 'desc')
+            ->limit(4)
+            ->get();
+
+        $sidebarNews = News::published()
+            ->with('category')
+            ->latest('published_at')
+            ->limit(6)
+            ->get();
+
+        $weeklyNews = News::published()
+            ->with('category')
+            ->where('created_at', '>=', now()->subWeek())
+            ->orderBy('views', 'desc')
+            ->limit(8)
+            ->get();
+
+        $latestNews = News::published()
+            ->with('category')
+            ->latest('published_at')
+            ->limit(8)
+            ->get();
+
+        $recentArticles = News::published()
+            ->with('category')
+            ->latest('published_at')
+            ->limit(6)
+            ->get();
+
+        return view('frontend.news.index', compact(
+            'news',
+            'categories',
+            'featuredNews',
+            'sidebarNews',
+            'weeklyNews',
+            'latestNews',
+            'recentArticles'
+        ));
     }
-    
+
     // Detail berita + view counter
     // public function show(News $news)
     // {
@@ -33,13 +73,13 @@ class NewsPublicController extends Controller
     //     if ($news->status !== 'published') {
     //         abort(404);
     //     }
-        
+
     //     // Increment view counter
     //     $news->increment('views');
-        
+
     //     // Load relasi
     //     $news->load(['category', 'user', 'tags', 'comments.user']);
-        
+
     //     // Berita terkait (kategori sama)
     //     $relatedNews = News::where('category_id', $news->category_id)
     //         ->where('id', '!=', $news->id)
@@ -47,49 +87,49 @@ class NewsPublicController extends Controller
     //         ->latest('published_at')
     //         ->take(4)
     //         ->get();
-        
+
     //     return view('frontend.news.show', compact('news', 'relatedNews'));
     // }
     public function show(News $news)
-{
-    // Hanya tampilkan berita yang published
-    if ($news->status !== 'published') {
-        abort(404);
-    }
-    
-    // Increment view counter
-    $news->incrementViews();
-    
-    // Load relasi
-    $news->load(['category', 'user', 'tags', 'comments.user']);
-    
-    // Berita terkait (kategori sama)
-    $relatedNews = News::with(['category', 'user'])
-        ->where('category_id', $news->category_id)
-        ->where('id', '!=', $news->id)
-        ->where('status', 'published')
-        ->latest('published_at')
-        ->take(4)
-        ->get();
+    {
+        // Hanya tampilkan berita yang published
+        if ($news->status !== 'published') {
+            abort(404);
+        }
 
-    // Popular News (TAMBAHKAN INI)
-    $popularNews = News::with(['category', 'user'])
-        ->where('status', 'published')
-        ->orderBy('views', 'desc')
-        ->take(5)
-        ->get();
-    
-    // Categories with count (TAMBAHKAN INI)
-    $categories = Category::withCount(['news' => function($query) {
+        // Increment view counter
+        $news->incrementViews();
+
+        // Load relasi
+        $news->load(['category', 'user', 'tags', 'comments.user']);
+
+        // Berita terkait (kategori sama)
+        $relatedNews = News::with(['category', 'user'])
+            ->where('category_id', $news->category_id)
+            ->where('id', '!=', $news->id)
+            ->where('status', 'published')
+            ->latest('published_at')
+            ->take(4)
+            ->get();
+
+        // Popular News (TAMBAHKAN INI)
+        $popularNews = News::with(['category', 'user'])
+            ->where('status', 'published')
+            ->orderBy('views', 'desc')
+            ->take(5)
+            ->get();
+
+        // Categories with count (TAMBAHKAN INI)
+        $categories = Category::withCount(['news' => function ($query) {
             $query->where('status', 'published');
         }])
-        ->having('news_count', '>', 0)
-        ->orderBy('news_count', 'desc')
-        ->get();
-    
-    return view('frontend.news.show', compact('news', 'relatedNews', 'popularNews', 'categories'));
-}
-    
+            ->having('news_count', '>', 0)
+            ->orderBy('news_count', 'desc')
+            ->get();
+
+        return view('frontend.news.show', compact('news', 'relatedNews', 'popularNews', 'categories'));
+    }
+
     // Berita by kategori
     public function category(Category $category)
     {
@@ -99,37 +139,37 @@ class NewsPublicController extends Controller
             ->latest('published_at')
             ->paginate(12);
 
-        $categories = Category::withCount(['news' => function($query) {
+        $categories = Category::withCount(['news' => function ($query) {
             $query->where('status', 'published');
         }])->get();
 
         return view('frontend.news.category', compact('news', 'category', 'categories'));
     }
-    
+
     // Search berita
     public function search(Request $request)
     {
         $query = $request->input('q');
         $categoryId = $request->input('category');
-        
+
         $news = News::with(['category', 'user'])
             ->where('status', 'published')
-            ->when($query, function($q) use ($query) {
+            ->when($query, function ($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
-                  ->orWhere('content', 'like', "%{$query}%")
-                  ->orWhere('excerpt', 'like', "%{$query}%");
+                    ->orWhere('content', 'like', "%{$query}%")
+                    ->orWhere('excerpt', 'like', "%{$query}%");
             })
-            ->when($categoryId, function($q) use ($categoryId) {
+            ->when($categoryId, function ($q) use ($categoryId) {
                 $q->where('category_id', $categoryId);
             })
             ->latest('published_at')
             ->paginate(12);
-        
+
         $categories = Category::withCount('news')->get();
-        
+
         return view('frontend.news.search', compact('news', 'categories', 'query', 'categoryId'));
     }
-    
+
     // Store comment
     public function storeComment(Request $request, News $news)
     {
