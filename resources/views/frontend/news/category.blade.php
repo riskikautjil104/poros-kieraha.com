@@ -1,190 +1,12 @@
-{{-- @extends('frontend.layout')
-
-@section('title', 'Kategori: ' . $category->name)
-
-@section('content')
-<div class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-12">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center mb-4">
-            <a href="{{ route('news.index') }}" class="text-white/80 hover:text-white mr-3">
-                ← Kembali
-            </a>
-        </div>
-        <h1 class="text-4xl font-bold mb-2">📂 {{ $category->name }}</h1>
-        <p class="text-lg opacity-90">
-            Menampilkan {{ $news->total() }} berita dalam kategori ini
-        </p>
-    </div>
-</div>
-
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- Main Content -->
-        <div class="lg:col-span-2">
-            @if($news->count() > 0)
-                <!-- News Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    @foreach($news as $item)
-                        <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition group">
-                            <a href="{{ route('news.show', $item->slug) }}">
-                                @if($item->image)
-                                    <div class="relative overflow-hidden">
-                                        <img src="{{ Storage::url($item->image) }}" 
-                                             alt="{{ $item->title }}"
-                                             class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
-                                        
-                                        <!-- Trending Badge (if views > 1000) -->
-                                        @if($item->views > 1000)
-                                            <div class="absolute top-3 right-3">
-                                                <span class="px-2 py-1 bg-red-600 text-white text-xs font-bold rounded-full animate-pulse">
-                                                    🔥 Trending
-                                                </span>
-                                            </div>
-                                        @endif
-                                    </div>
-                                @else
-                                    <div class="w-full h-48 bg-gradient-to-br from-indigo-400 to-purple-400 flex items-center justify-center">
-                                        <span class="text-white text-5xl">📰</span>
-                                    </div>
-                                @endif
-                                
-                                <div class="p-5">
-                                    <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-indigo-600 transition line-clamp-2">
-                                        {{ $item->title }}
-                                    </h3>
-                                    
-                                    @if($item->excerpt)
-                                        <p class="text-gray-600 text-sm mb-3 line-clamp-3">
-                                            {{ $item->excerpt }}
-                                        </p>
-                                    @endif
-                                    
-                                    <div class="flex items-center justify-between text-xs text-gray-500">
-                                        <div class="flex items-center space-x-3">
-                                            <span>👤 {{ $item->user->name }}</span>
-                                            <span>📅 {{ $item->formatted_date }}</span>
-                                        </div>
-                                        <span class="flex items-center">
-                                            👁️ {{ number_format($item->views) }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </a>
-                        </article>
-                    @endforeach
-                </div>
-
-                <!-- Pagination -->
-                <div class="bg-white rounded-lg shadow-md p-4">
-                    {{ $news->links() }}
-                </div>
-            @else
-                <div class="bg-white rounded-lg shadow-md p-12 text-center">
-                    <div class="text-6xl mb-4">📭</div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-2">Belum Ada Berita</h3>
-                    <p class="text-gray-600 mb-6">
-                        Belum ada berita dalam kategori <strong>{{ $category->name }}</strong>.
-                    </p>
-                    <a href="{{ route('news.index') }}" class="inline-block px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">
-                        Lihat Semua Berita
-                    </a>
-                </div>
-            @endif
-        </div>
-
-        <!-- Sidebar -->
-        <div class="lg:col-span-1">
-            <!-- Category Info -->
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-3">ℹ️ Tentang Kategori</h3>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Nama:</span>
-                        <span class="font-bold text-gray-900">{{ $category->name }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Total Berita:</span>
-                        <span class="font-bold text-indigo-600">{{ $news->total() }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Other Categories -->
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-4">📂 Kategori Lainnya</h3>
-                <div class="space-y-2">
-                    @foreach($categories as $cat)
-                        @if($cat->id !== $category->id)
-                            <a href="{{ route('news.category', $cat->slug) }}" 
-                               class="flex items-center justify-between p-3 rounded-lg hover:bg-indigo-50 transition group">
-                                <span class="text-gray-700 group-hover:text-indigo-600 font-medium">
-                                    {{ $cat->name }}
-                                </span>
-                                <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full group-hover:bg-indigo-600 group-hover:text-white">
-                                    {{ $cat->news_count }}
-                                </span>
-                            </a>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
-
-            <!-- Popular in Category -->
-            @php
-                $popularInCategory = App\Models\News::where('category_id', $category->id)
-                    ->where('status', 'published')
-                    ->orderBy('views', 'desc')
-                    ->take(5)
-                    ->get();
-            @endphp
-
-            @if($popularInCategory->count() > 0)
-                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                    <h3 class="text-xl font-bold text-gray-900 mb-4">🔥 Populer di {{ $category->name }}</h3>
-                    <div class="space-y-3">
-                        @foreach($popularInCategory as $index => $popular)
-                            <a href="{{ route('news.show', $popular->slug) }}" class="flex gap-3 group">
-                                <div class="flex-shrink-0 w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
-                                    {{ $index + 1 }}
-                                </div>
-                                <div class="flex-1">
-                                    <h4 class="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition line-clamp-2 mb-1">
-                                        {{ $popular->title }}
-                                    </h4>
-                                    <p class="text-xs text-gray-500">
-                                        👁️ {{ number_format($popular->views) }} views
-                                    </p>
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            <!-- Search in Category -->
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h3 class="text-xl font-bold text-gray-900 mb-4">🔍 Cari di {{ $category->name }}</h3>
-                <form action="{{ route('news.search') }}" method="GET">
-                    <input type="hidden" name="category" value="{{ $category->id }}">
-                    <input type="text" 
-                           name="q" 
-                           placeholder="Ketik kata kunci..." 
-                           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 mb-2">
-                    <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition">
-                        Cari
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-@endsection --}}
+{{-- =====================================================
+     category.blade.php  —  PKR Corporate Theme
+     ===================================================== --}}
+{{-- @SAVE AS: resources/views/frontend/category.blade.php --}}
 @extends('frontend.layout')
 
 @section('title', $category->name . ' - Berita')
 
 @section('content')
-<!-- Preloader Start -->
 <div id="preloader-active">
     <div class="preloader d-flex align-items-center justify-content-center">
         <div class="preloader-inner position-relative">
@@ -195,206 +17,399 @@
         </div>
     </div>
 </div>
-<!-- Preloader End -->
 
-<main>
-    <!-- Whats New Start -->
-    <section class="whats-news-area pt-50 pb-20">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-8">
-                    <div class="row d-flex justify-content-between">
-                        <div class="col-lg-12 col-md-12">
-                            <div class="section-tittle mb-30">
-                                <h3>{{ $category->name }}</h3>
-                                @if($category->description)
-                                    <p>{{ $category->description }}</p>
-                                @endif
-                            </div>
+<!-- Category Header -->
+<div class="pkr-page-header">
+    <div class="container">
+        <nav class="pkr-page-breadcrumb">
+            <a href="{{ route('home') }}">Home</a>
+            <span>/</span>
+            <span>{{ $category->name }}</span>
+        </nav>
+        <h1>{{ $category->name }}</h1>
+        @if($category->description)
+            <p>{{ $category->description }}</p>
+        @endif
+        <div class="pkr-page-header-meta">
+            <span><i class="fas fa-newspaper"></i> {{ $news->total() }} berita ditemukan</span>
+        </div>
+    </div>
+</div>
+
+<!-- Content -->
+<section class="pkr-list-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                @forelse($news as $item)
+                <article class="pkr-list-item">
+                    <a href="{{ route('news.show', $item->slug) }}" class="pkr-list-img">
+                        @if($item->image)
+                            <img src="{{ Storage::url($item->image) }}" alt="{{ $item->title }}">
+                        @else
+                            <img src="{{ asset('assets/img/news/whatNews1.jpg') }}" alt="{{ $item->title }}">
+                        @endif
+                    </a>
+                    <div class="pkr-list-body">
+                        <span class="pkr-badge">{{ $item->category->name }}</span>
+                        <h3>
+                            <a href="{{ route('news.show', $item->slug) }}">{{ $item->title }}</a>
+                        </h3>
+                        @if($item->excerpt)
+                            <p>{{ Str::limit($item->excerpt, 140) }}</p>
+                        @endif
+                        <div class="pkr-list-meta">
+                            <span><i class="far fa-calendar"></i> {{ $item->published_at->format('d M Y') }}</span>
+                            <span><i class="far fa-eye"></i> {{ number_format($item->views) }}</span>
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <!-- News Content -->
-                            <div class="whats-news-caption">
-                                <div class="row">
-                                    @forelse($news as $item)
-                                        <div class="col-lg-6 col-md-6">
-                                            <div class="single-what-news mb-100">
-                                                <div class="what-img">
-                                                    @if($item->image)
-                                                        <img src="{{ Storage::url($item->image) }}" alt="{{ $item->title }}">
-                                                    @else
-                                                        <img src="{{ asset('assets/img/news/whatNews1.jpg') }}" alt="{{ $item->title }}">
-                                                    @endif
-                                                </div>
-                                                <div class="what-cap">
-                                                    <span class="color1">{{ $item->category->name }}</span>
-                                                    <h4>
-                                                        <a href="{{ route('news.show', $item->slug) }}">
-                                                            {{ Str::limit($item->title, 60) }}
-                                                        </a>
-                                                    </h4>
-                                                    <p>{{ Str::limit($item->excerpt, 100) }}</p>
-                                                    <small class="text-muted">
-                                                        <i class="far fa-calendar"></i> {{ $item->published_at->format('d M Y') }}
-                                                        <i class="far fa-eye ml-2"></i> {{ $item->views }} views
-                                                    </small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @empty
-                                        <div class="col-12">
-                                            <div class="alert alert-info">
-                                                Belum ada berita di kategori ini.
-                                            </div>
-                                        </div>
-                                    @endforelse
-                                </div>
-                            </div>
-                            <!-- End News Content -->
-                        </div>
-                    </div>
+                </article>
+                @empty
+                <div class="pkr-empty-state">
+                    <i class="fas fa-newspaper"></i>
+                    <h3>Belum Ada Berita</h3>
+                    <p>Belum ada berita dalam kategori <strong>{{ $category->name }}</strong>.</p>
+                    <a href="{{ route('news.index') }}" class="btn-pkr-primary">Lihat Semua Berita</a>
                 </div>
+                @endforelse
 
-                <!-- Sidebar -->
-                <div class="col-lg-4">
-                    <!-- Section Tittle -->
-                    <div class="section-tittle mb-40">
-                        <h3>Follow Us</h3>
-                    </div>
-                    
-                    <!-- Flow Social -->
-                    <div class="single-follow mb-45">
-                        <div class="single-box">
-                            <div class="follow-us d-flex align-items-center">
-                                <div class="follow-social">
-                                    <a href="#"><img src="{{ asset('assets/img/news/icon-fb.png') }}" alt=""></a>
-                                </div>
-                                <div class="follow-count">  
-                                    <span>8,045</span>
-                                    <p>Fans</p>
-                                </div>
-                            </div> 
-                            <div class="follow-us d-flex align-items-center">
-                                <div class="follow-social">
-                                    <a href="#"><img src="{{ asset('assets/img/news/icon-tw.png') }}" alt=""></a>
-                                </div>
-                                <div class="follow-count">
-                                    <span>8,045</span>
-                                    <p>Fans</p>
-                                </div>
-                            </div>
-                            <div class="follow-us d-flex align-items-center">
-                                <div class="follow-social">
-                                    <a href="#"><img src="{{ asset('assets/img/news/icon-ins.png') }}" alt=""></a>
-                                </div>
-                                <div class="follow-count">
-                                    <span>8,045</span>
-                                    <p>Fans</p>
-                                </div>
-                            </div>
-                            <div class="follow-us d-flex align-items-center">
-                                <div class="follow-social">
-                                    <a href="#"><img src="{{ asset('assets/img/news/icon-yo.png') }}" alt=""></a>
-                                </div>
-                                <div class="follow-count">
-                                    <span>8,045</span>
-                                    <p>Fans</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Pagination -->
+                @if($news->hasPages())
+                <div class="pkr-pagination">
+                    <nav>
+                        <ul class="pkr-pag-list">
+                            @if($news->onFirstPage())
+                                <li class="disabled"><span><i class="fas fa-chevron-left"></i></span></li>
+                            @else
+                                <li><a href="{{ $news->previousPageUrl() }}"><i class="fas fa-chevron-left"></i></a></li>
+                            @endif
 
-                    <!-- Categories -->
-                    <div class="section-tittle mb-40">
-                        <h3>Kategori Lainnya</h3>
-                    </div>
-                    <div class="single-follow mb-45">
-                        <div class="single-box">
+                            @foreach($news->getUrlRange(1, $news->lastPage()) as $page => $url)
+                                <li class="{{ $page == $news->currentPage() ? 'active' : '' }}">
+                                    @if($page == $news->currentPage())
+                                        <span>{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $url }}">{{ $page }}</a>
+                                    @endif
+                                </li>
+                            @endforeach
+
+                            @if($news->hasMorePages())
+                                <li><a href="{{ $news->nextPageUrl() }}"><i class="fas fa-chevron-right"></i></a></li>
+                            @else
+                                <li class="disabled"><span><i class="fas fa-chevron-right"></i></span></li>
+                            @endif
+                        </ul>
+                    </nav>
+                </div>
+                @endif
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="pkr-detail-sidebar">
+                    <!-- Kategori Lain -->
+                    <div class="pkr-sidebar-widget">
+                        <div class="pkr-sw-title"><i class="fas fa-folder-open"></i> Kategori Lainnya</div>
+                        <div class="pkr-sw-body pkr-sw-cats">
                             @foreach($categories as $cat)
-                                <div class="follow-us d-flex align-items-center justify-content-between mb-3">
-                                    <a href="{{ route('news.category', $cat->slug) }}" 
-                                       class="{{ $cat->id == $category->id ? 'font-weight-bold text-primary' : 'text-dark' }}">
-                                        {{ $cat->name }}
-                                    </a>
-                                    <span class="badge badge-secondary">{{ $cat->news_count }}</span>
-                                </div>
+                            <a href="{{ route('news.category', $cat->slug) }}"
+                               class="pkr-sw-cat-item {{ $cat->id == $category->id ? 'pkr-sw-cat-active' : '' }}">
+                                <span>{{ $cat->name }}</span>
+                                <span class="pkr-sw-cat-count">{{ $cat->news_count }}</span>
+                            </a>
                             @endforeach
                         </div>
                     </div>
-                    
-                    <!-- News Poster -->
-                    <div class="news-poster d-none d-lg-block">
-                        <img src="{{ asset('assets/img/news/news_card.jpg') }}" alt="">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- Whats New End -->
 
-    <!-- Start pagination -->
-    @if($news->hasPages())
-        <div class="pagination-area pb-45 text-center">
-            <div class="container">
-                <div class="row">
-                    <div class="col-xl-12">
-                        <div class="single-wrap d-flex justify-content-center">
-                            <nav aria-label="Page navigation">
-                                <ul class="pagination justify-content-start">
-                                    {{-- Previous Page Link --}}
-                                    @if ($news->onFirstPage())
-                                        <li class="page-item disabled">
-                                            <span class="page-link">
-                                                <span class="flaticon-arrow roted"></span>
-                                            </span>
-                                        </li>
-                                    @else
-                                        <li class="page-item">
-                                            <a class="page-link" href="{{ $news->previousPageUrl() }}">
-                                                <span class="flaticon-arrow roted"></span>
-                                            </a>
-                                        </li>
-                                    @endif
-
-                                    {{-- Pagination Elements --}}
-                                    @foreach ($news->getUrlRange(1, $news->lastPage()) as $page => $url)
-                                        @if ($page == $news->currentPage())
-                                            <li class="page-item active">
-                                                <span class="page-link">{{ str_pad($page, 2, '0', STR_PAD_LEFT) }}</span>
-                                            </li>
-                                        @else
-                                            <li class="page-item">
-                                                <a class="page-link" href="{{ $url }}">{{ str_pad($page, 2, '0', STR_PAD_LEFT) }}</a>
-                                            </li>
-                                        @endif
-                                    @endforeach
-
-                                    {{-- Next Page Link --}}
-                                    @if ($news->hasMorePages())
-                                        <li class="page-item">
-                                            <a class="page-link" href="{{ $news->nextPageUrl() }}">
-                                                <span class="flaticon-arrow right-arrow"></span>
-                                            </a>
-                                        </li>
-                                    @else
-                                        <li class="page-item disabled">
-                                            <span class="page-link">
-                                                <span class="flaticon-arrow right-arrow"></span>
-                                            </span>
-                                        </li>
-                                    @endif
-                                </ul>
-                            </nav>
+                    <!-- Follow Us -->
+                    <div class="pkr-sidebar-widget">
+                        <div class="pkr-sw-title"><i class="fas fa-users"></i> Ikuti Kami</div>
+                        <div class="pkr-sw-body pkr-follow-grid">
+                            <a href="#" class="pkr-follow-item pkr-follow-fb">
+                                <i class="fab fa-facebook-f"></i>
+                                <div><strong>8,045</strong><span>Pengikut</span></div>
+                            </a>
+                            <a href="#" class="pkr-follow-item pkr-follow-ig">
+                                <i class="fab fa-instagram"></i>
+                                <div><strong>5,210</strong><span>Pengikut</span></div>
+                            </a>
+                            <a href="#" class="pkr-follow-item pkr-follow-yt">
+                                <i class="fab fa-youtube"></i>
+                                <div><strong>3,100</strong><span>Subscriber</span></div>
+                            </a>
+                            <a href="#" class="pkr-follow-item pkr-follow-tw">
+                                <i class="fab fa-twitter"></i>
+                                <div><strong>2,800</strong><span>Pengikut</span></div>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    @endif
-    <!-- End pagination  -->
-</main>
-
+    </div>
+</section>
 @endsection
+
+
+{{-- =====================================================
+     SHARED STYLES for list pages (category, news index, search)
+     Put this inside the @section('content') of each, or better:
+     add to layout via @push('styles')
+     ===================================================== --}}
+@push('styles')
+<style>
+/* Page Header */
+.pkr-page-header {
+    background: var(--blue);
+    padding: 40px 0 32px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pkr-page-header::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 300px; height: 100%;
+    background: rgba(255,255,255,0.04);
+    clip-path: polygon(30% 0, 100% 0, 100% 100%, 0% 100%);
+}
+
+.pkr-page-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 14px;
+}
+
+.pkr-page-breadcrumb a { color: rgba(255,255,255,0.75); }
+.pkr-page-breadcrumb a:hover { color: #fff; }
+
+.pkr-page-header h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 8px;
+}
+
+.pkr-page-header p {
+    color: rgba(255,255,255,0.70);
+    font-size: 15px;
+    margin: 0 0 14px;
+}
+
+.pkr-page-header-meta {
+    display: flex;
+    gap: 18px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+}
+
+.pkr-page-header-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pkr-page-header-meta i { color: rgba(255,255,255,0.4); }
+
+/* Accent line */
+.pkr-page-header-accent {
+    height: 4px;
+    background: linear-gradient(90deg, var(--red) 0%, var(--blue-mid) 100%);
+}
+
+/* List Section */
+.pkr-list-section { padding: 50px 0 60px; background: var(--off-white); }
+
+/* List Item */
+.pkr-list-item {
+    display: flex;
+    gap: 20px;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .25s, transform .25s;
+}
+
+.pkr-list-item:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-3px);
+}
+
+.pkr-list-img {
+    flex-shrink: 0;
+    width: 220px;
+    overflow: hidden;
+    display: block;
+}
+
+.pkr-list-img img {
+    width: 100%;
+    height: 100%;
+    min-height: 160px;
+    object-fit: cover;
+    transition: transform .4s ease;
+}
+
+.pkr-list-item:hover .pkr-list-img img { transform: scale(1.06); }
+
+.pkr-list-body {
+    padding: 20px 20px 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.pkr-list-body h3 {
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--text-main);
+    margin: 8px 0 10px;
+    transition: color .2s;
+}
+
+.pkr-list-item:hover .pkr-list-body h3 { color: var(--red); }
+
+.pkr-list-body p {
+    font-size: 13.5px;
+    color: var(--text-soft);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.pkr-list-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12.5px;
+    color: var(--gray-400);
+}
+
+.pkr-list-meta span { display: flex; align-items: center; gap: 5px; }
+.pkr-list-meta i { color: var(--blue-mid); font-size: 11.5px; }
+
+/* Pagination */
+.pkr-pagination { margin-top: 30px; display: flex; justify-content: center; }
+
+.pkr-pag-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 6px;
+}
+
+.pkr-pag-list li a,
+.pkr-pag-list li span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-main);
+    background: var(--white);
+    transition: all .2s;
+}
+
+.pkr-pag-list li a:hover {
+    background: var(--blue-light);
+    border-color: var(--blue-mid);
+    color: var(--blue);
+}
+
+.pkr-pag-list li.active span {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+}
+
+.pkr-pag-list li.disabled span { opacity: .4; }
+
+/* Empty state */
+.pkr-empty-state {
+    text-align: center;
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: 60px 30px;
+}
+
+.pkr-empty-state i {
+    font-size: 56px;
+    color: var(--gray-200);
+    margin-bottom: 18px;
+}
+
+.pkr-empty-state h3 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--blue);
+    margin-bottom: 10px;
+}
+
+.pkr-empty-state p {
+    color: var(--text-soft);
+    margin-bottom: 24px;
+}
+
+/* Active category */
+.pkr-sw-cat-active {
+    background: var(--blue-light) !important;
+    color: var(--blue) !important;
+    font-weight: 700 !important;
+    border-left: 3px solid var(--red);
+}
+
+/* Follow grid */
+.pkr-follow-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.pkr-follow-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    transition: all .2s;
+    text-decoration: none;
+}
+
+.pkr-follow-item:hover { transform: translateY(-2px); color: #fff; }
+
+.pkr-follow-item i { font-size: 20px; }
+
+.pkr-follow-item div { display: flex; flex-direction: column; }
+.pkr-follow-item strong { font-size: 14px; font-weight: 700; }
+.pkr-follow-item span { font-size: 11px; opacity: .85; }
+
+.pkr-follow-fb { background: #1877f2; }
+.pkr-follow-ig { background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.pkr-follow-yt { background: #ff0000; }
+.pkr-follow-tw { background: #1da1f2; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .pkr-list-item { flex-direction: column; }
+    .pkr-list-img { width: 100%; height: 200px; }
+    .pkr-list-body { padding: 16px; }
+    .pkr-page-header h1 { font-size: 24px; }
+}
+</style>
+@endpush
