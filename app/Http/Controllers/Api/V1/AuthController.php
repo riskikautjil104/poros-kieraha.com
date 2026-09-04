@@ -19,10 +19,14 @@ class AuthController extends BaseApiController
         $validator = Validator::make($request->all(), [
             'email'    => 'required|email',
             'password' => 'required|string',
+        ], [
+            'email.required'    => 'Alamat email wajib diisi.',
+            'email.email'       => 'Format alamat email tidak valid.',
+            'password.required' => 'Kata sandi wajib diisi.',
         ]);
 
         if ($validator->fails()) {
-            return $this->sendError('Validasi gagal', 422, $validator->errors()->toArray());
+            return $this->sendError($validator->errors()->first(), 422, $validator->errors()->toArray());
         }
 
         $user = User::where('email', $request->email)->first();
@@ -53,12 +57,19 @@ class AuthController extends BaseApiController
     {
         $validator = Validator::make($request->all(), [
             'name'     => 'required|string|max:255',
-            'email'    => 'required|string|email|max:255|unique:users',
+            'email'    => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:6',
+        ], [
+            'name.required'     => 'Nama lengkap wajib diisi.',
+            'email.required'    => 'Alamat email wajib diisi.',
+            'email.email'       => 'Format alamat email tidak valid.',
+            'email.unique'      => 'Email ini sudah terdaftar. Silakan gunakan email lain atau langsung Masuk.',
+            'password.required' => 'Kata sandi wajib diisi.',
+            'password.min'      => 'Kata sandi minimal 6 karakter.',
         ]);
 
         if ($validator->fails()) {
-            return $this->sendError('Validasi registrasi gagal', 422, $validator->errors()->toArray());
+            return $this->sendError($validator->errors()->first(), 422, $validator->errors()->toArray());
         }
 
         $user = User::create([
