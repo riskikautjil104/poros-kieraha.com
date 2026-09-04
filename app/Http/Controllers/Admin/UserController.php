@@ -11,7 +11,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::paginate(10); // 👈 ambil data dari model User
+        $users = User::latest()->paginate(10); // 👈 ambil data dari model User urut terbaru
         return view('admin.users.index', compact('users'));
     }
 
@@ -26,7 +26,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:8|confirmed',
-            'role' => 'required|in:admin,penulis'
+            'role' => 'required|in:admin,penulis,user'
         ]);
 
         User::create([
@@ -49,7 +49,7 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin,penulis',
+            'role' => 'required|in:admin,penulis,user',
             'password' => 'nullable|min:8|confirmed'
         ]);
 

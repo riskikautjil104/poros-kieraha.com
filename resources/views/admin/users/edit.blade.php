@@ -31,8 +31,9 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Role</label>
                     <select name="role" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                        <option value="penulis" {{ $user->role == 'penulis' ? 'selected' : '' }}>Penulis</option>
-                        <option value="admin" {{ $user->role == 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>User (Pembaca)</option>
+                        <option value="penulis" {{ old('role', $user->role) == 'penulis' ? 'selected' : '' }}>Penulis</option>
+                        <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
                     </select>
                     @error('role')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
