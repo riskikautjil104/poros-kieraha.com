@@ -121,7 +121,11 @@ class FcmService
     private static function dispatchFcm(string $topic, string $title, string $body, array $data = [], ?string $imageUrl = null): void
     {
         // 1. Cek konfigurasi Firebase Service Account (HTTP v1 - Modern)
-        $credentialsPath = env('FIREBASE_CREDENTIALS', storage_path('app/firebase_credentials.json'));
+        $credentialsConfig = env('FIREBASE_CREDENTIALS', 'storage/app/firebase_credentials.json');
+        $credentialsPath = (Str::startsWith($credentialsConfig, '/') || preg_match('/^[A-Za-z]:\\\\/', $credentialsConfig))
+            ? $credentialsConfig
+            : base_path($credentialsConfig);
+
         if (file_exists($credentialsPath)) {
             self::sendHttpV1($credentialsPath, $topic, $title, $body, $data, $imageUrl);
             return;
