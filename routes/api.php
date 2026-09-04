@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AdController;
+use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\CommentController;
 use App\Http\Controllers\Api\V1\HomeController;
@@ -51,4 +52,12 @@ Route::prefix('v1')->middleware(['track.visitor'])->group(function () {
 
     // 9. Public Stats & Client Connection Info
     Route::get('/stats', [MiscellaneousController::class, 'stats'])->name('api.v1.stats');
+
+    // 10. Authentication (Mobile App)
+    Route::prefix('auth')->group(function () {
+        Route::post('/login', [AuthController::class, 'login'])->name('api.v1.auth.login');
+        Route::post('/register', [AuthController::class, 'register'])->name('api.v1.auth.register');
+        Route::get('/me', [AuthController::class, 'me'])->name('api.v1.auth.me');
+        Route::post('/logout', [AuthController::class, 'logout'])->name('api.v1.auth.logout');
+    });
 });
