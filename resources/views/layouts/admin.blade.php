@@ -338,6 +338,14 @@
                         @endif
                     </a>
 
+                    <!-- Partners -->
+                    <a href="{{ route('admin.partners.index') }}" 
+                       class="menu-item flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800/50 hover:text-white rounded-lg transition-all group {{ request()->routeIs('admin.partners.*') ? 'active bg-gray-800 text-white font-semibold' : '' }}">
+                        <i class="fas fa-handshake w-5 text-center mr-3 {{ request()->routeIs('admin.partners.*') ? 'text-indigo-400' : 'group-hover:text-indigo-400' }}"></i>
+                        <span>Partners</span>
+                    </a>
+
+
                     <!-- Divider -->
                     <div class="my-4 border-t border-gray-700"></div>
                     <p class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Pengaturan</p>

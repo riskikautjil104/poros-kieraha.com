@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Frontend;
 use App\Models\News;
 use App\Models\Category;
 use App\Models\YoutubeVideo;
+use App\Models\Partner;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+
 
 class HomeController extends Controller
 {
@@ -99,7 +101,13 @@ class HomeController extends Controller
             ->limit(2)
             ->get();
 
+        // Partners (ambil yang aktif)
+        $partners = Partner::active()
+            ->orderBy('sort_order')
+            ->get();
+
         return view('frontend.home', compact(
+
             'featuredNews',
             'trendingNews',
             'sidebarNews',
@@ -107,7 +115,8 @@ class HomeController extends Controller
             'latestNews',
             'categories',
             'recentArticles',
-            'youtubeVideos'
+            'youtubeVideos',
+            'partners'
         ));
     }
 

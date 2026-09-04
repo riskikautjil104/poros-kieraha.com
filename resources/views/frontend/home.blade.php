@@ -521,102 +521,42 @@
         <div class="partners-carousel-wrapper">
             <div class="swiper partners-swiper">
                 <div class="swiper-wrapper">
-                    <!-- Partner 1 -->
-                    <div class="swiper-slide">
-                        <div class="partner-card">
-                            <div class="partner-logo">
-                                <img src="https://poros-kieraha.com/assets/img/logo/hr.png" alt="Partner 1">
-                            </div>
-                            <div class="partner-overlay">
-                                <h4>HeartWare Digital</h4>
-                                <p>Kategori: Media Partner</p>
-                                <a href="#" class="partner-link">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    @forelse($partners ?? collect() as $partner)
+                        <div class="swiper-slide">
+                            <div class="partner-card">
+                                <div class="partner-logo">
+                                    <img src="{{ $partner->image_url }}" alt="{{ $partner->name }}">
+                                </div>
+                                <div class="partner-overlay">
+                                    <h4>{{ $partner->name }}</h4>
+                                    @if(!empty($partner->category))
+                                        <p>Kategori: {{ $partner->category }}</p>
+                                    @endif
 
-                    <!-- Partner 2 -->
-                    <div class="swiper-slide">
-                        <div class="partner-card">
-                            <div class="partner-logo">
-                                <img src="https://i.pinimg.com/736x/6e/1f/75/6e1f7515e2a7e0bc6bd0fb74e64a94ae.jpg" alt="Partner 2">
-                            </div>
-                            <div class="partner-overlay">
-                                <h4>Partner Name 2</h4>
-                                <p>Kategori: Technology</p>
-                                <a href="#" class="partner-link">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
+                                    @if(!empty($partner->link))
+                                        <a href="{{ $partner->link }}" target="_blank" rel="noopener noreferrer" class="partner-link">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    @else
+                                        <a href="#" class="partner-link" onclick="return false;">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Partner 3 -->
-                    <div class="swiper-slide">
-                        <div class="partner-card">
-                            <div class="partner-logo">
-                                <img src="https://poros-kieraha.com/assets/img/logo/hr.png" alt="Partner 3">
-                            </div>
-                            <div class="partner-overlay">
-                                <h4>Partner Name 3</h4>
-                                <p>Kategori: Business</p>
-                                <a href="#" class="partner-link">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
+                    @empty
+                        <div class="swiper-slide">
+                            <div class="partner-card">
+                                <div class="partner-overlay" style="opacity:1; position:relative;">
+                                    <h4>Tidak ada partner</h4>
+                                    <p>Silakan tambahkan data partner.</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Partner 4 -->
-                    <div class="swiper-slide">
-                        <div class="partner-card">
-                            <div class="partner-logo">
-                                <img src="https://i.pinimg.com/736x/6e/1f/75/6e1f7515e2a7e0bc6bd0fb74e64a94ae.jpg" alt="Partner 4">
-                            </div>
-                            <div class="partner-overlay">
-                                <h4>Partner Name 4</h4>
-                                <p>Kategori: Education</p>
-                                <a href="#" class="partner-link">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Partner 5 -->
-                    <div class="swiper-slide">
-                        <div class="partner-card">
-                            <div class="partner-logo">
-                                <img src="https://poros-kieraha.com/assets/img/logo/hr.png" alt="Partner 5">
-                            </div>
-                            <div class="partner-overlay">
-                                <h4>Partner Name 5</h4>
-                                <p>Kategori: Healthcare</p>
-                                <a href="#" class="partner-link">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Partner 6 -->
-                    <div class="swiper-slide">
-                        <div class="partner-card">
-                            <div class="partner-logo">
-                                <img src="https://i.pinimg.com/736x/6e/1f/75/6e1f7515e2a7e0bc6bd0fb74e64a94ae.jpg" alt="Partner 6">
-                            </div>
-                            <div class="partner-overlay">
-                                <h4>Partner Name 6</h4>
-                                <p>Kategori: Finance</p>
-                                <a href="#" class="partner-link">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    @endforelse
                 </div>
+
 
                 <!-- Navigation Buttons -->
                 <div class="swiper-button-next partners-next">

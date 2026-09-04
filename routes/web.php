@@ -82,7 +82,13 @@ Route::middleware(['auth', 'is.verified', 'role:admin,penulis'])->prefix('admin'
         Route::resource('categories', CategoryController::class);
     });
 
+    // Partners (Admin Only)
+    Route::middleware(['role:admin'])->group(function () {
+        Route::resource('partners', \App\Http\Controllers\Admin\PartnerController::class);
+    });
+
     // Users (Admin Only)
+
     Route::middleware(['role:admin'])->group(function () {
         Route::resource('users', UserController::class);
         Route::patch('users/{user}/verify', [UserController::class, 'verify'])->name('users.verify');
