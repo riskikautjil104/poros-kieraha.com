@@ -53,8 +53,9 @@ class CommentController extends BaseApiController
             return $this->sendError('Validasi komentar gagal', 422, $validator->errors()->toArray());
         }
 
-        // Determine user ID (authenticated user, or explicit user_id if supplied)
-        $userId = auth()->id() ?? $request->input('user_id');
+        // Determine user (from Bearer token, session, or explicit user_id)
+        $user = $this->getAuthenticatedUser($request);
+        $userId = $user?->id;
 
         if (!$userId) {
             return $this->sendError('Harap login terlebih dahulu untuk mengirim komentar', 401);

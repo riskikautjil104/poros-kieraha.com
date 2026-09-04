@@ -134,8 +134,12 @@
                         <div class="pkr-sw-title"><i class="fas fa-envelope"></i> Newsletter</div>
                         <div class="pkr-sw-body">
                             <p>Dapatkan berita terbaru langsung di inbox Anda.</p>
-                            <input type="email" placeholder="Masukkan email Anda...">
-                            <button class="btn-pkr-primary w-100 mt-2">Langganan</button>
+                            <form onsubmit="handleNewsletterSubmit(event, this)">
+                                @csrf
+                                <input type="email" name="email" required placeholder="Masukkan email Anda...">
+                                <button type="submit" class="btn-pkr-primary w-100 mt-2">Langganan</button>
+                                <div class="newsletter-feedback mt-2" style="display:none; font-size:12px; font-weight:500;"></div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -147,6 +151,54 @@
 
 @push('styles')
 @include('frontend._shared_list_styles')
+@endpush
+
+@push('scripts')
+<script>
+function handleNewsletterSubmit(e, form) {
+    e.preventDefault();
+    var input = form.querySelector('input[name="email"]');
+    var btn = form.querySelector('button[type="submit"]');
+    var feedback = form.querySelector('.newsletter-feedback');
+    var email = input.value.trim();
+    if (!email) return;
+
+    btn.disabled = true;
+    var origText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+
+    fetch('{{ route("newsletter.subscribe") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email: email })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        feedback.style.display = 'block';
+        if (data.success) {
+            feedback.style.color = '#10B981';
+            feedback.textContent = data.message || 'Terima kasih telah berlangganan!';
+            input.value = '';
+        } else {
+            feedback.style.color = '#EF4444';
+            feedback.textContent = data.message || 'Email sudah terdaftar atau tidak valid.';
+        }
+    })
+    .catch(function() {
+        feedback.style.display = 'block';
+        feedback.style.color = '#EF4444';
+        feedback.textContent = 'Terjadi gangguan jaringan. Silakan coba lagi.';
+    })
+    .finally(function() {
+        btn.disabled = false;
+        btn.innerHTML = origText;
+    });
+}
+</script>
 @endpush
 
 

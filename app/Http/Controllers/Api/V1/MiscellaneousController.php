@@ -88,7 +88,7 @@ class MiscellaneousController extends BaseApiController
 
         Newsletter::updateOrCreate(
             ['email' => $request->input('email')],
-            ['is_subscribed' => true]
+            ['is_active' => true]
         );
 
         return $this->sendResponse([

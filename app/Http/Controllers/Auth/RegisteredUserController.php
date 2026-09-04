@@ -55,7 +55,7 @@ class RegisteredUserController extends Controller
         // Auto-subscribe to newsletter (handle duplicates)
         Newsletter::updateOrCreate(
             ['email' => $request->email],
-            ['is_subscribed' => true]
+            ['is_active' => true]
         );
 
         // Send verification email
