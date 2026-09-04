@@ -87,11 +87,6 @@ class AuthController extends BaseApiController
 
         return $this->sendResponse([
             'token' => $token,
-            'user'  => [
-                'id'         => $user->id,
-                'name'       => $user->name,
-        return $this->sendResponse([
-            'token' => $token,
             'user'  => $this->formatUserResponse($user),
         ], 'Pendaftaran akun berhasil! Selamat datang di Poros Kie Raha.', 201);
     }
