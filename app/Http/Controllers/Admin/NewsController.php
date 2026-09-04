@@ -12,6 +12,7 @@ use Intervention\Image\ImageManager;
 
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Gd\Driver; 
+use App\Services\FcmService; 
 
 class NewsController extends Controller
 {
@@ -103,6 +104,11 @@ class NewsController extends Controller
         $news->tags()->attach($validated['tags']);
     }
 
+    // Kirim notifikasi jika status published
+    if ($validated['status'] === 'published') {
+        FcmService::sendNewsNotification($news);
+    }
+
     return redirect()->route('admin.news.index')
         ->with('success', 'Berita berhasil dibuat! 🎉');
 }
@@ -161,6 +167,9 @@ class NewsController extends Controller
             $validated['image'] = $this->handleImageUpload($request->file('image'));
         }
 
+        // Cek apakah sebelumnya belum published
+        $wasPublished = !empty($news->published_at);
+
         // Set published_at jika status berubah ke published dan belum pernah published
         if ($validated['status'] == 'published' && !$news->published_at) {
             $validated['published_at'] = now();
@@ -171,6 +180,11 @@ class NewsController extends Controller
             $news->tags()->sync($request->tags);
         } else {
             $news->tags()->detach(); // Hapus semua tags
+        }
+
+        // Kirim notifikasi jika baru saja dipublikasikan
+        if ($validated['status'] === 'published' && !$wasPublished) {
+            FcmService::sendNewsNotification($news);
         }
 
         return redirect()->route('admin.news.index')

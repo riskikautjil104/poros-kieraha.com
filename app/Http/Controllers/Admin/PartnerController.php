@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\FcmService;
 use Illuminate\Http\Request;
 
 class PartnerController extends Controller
@@ -29,7 +30,7 @@ class PartnerController extends Controller
             'sort_order' => 'nullable|integer|min:0',
         ]);
 
-        \App\Models\Partner::create([
+        $partner = \App\Models\Partner::create([
             'name' => $request->name,
             'category' => $request->category,
             'image_url' => $request->image_url,
@@ -37,6 +38,10 @@ class PartnerController extends Controller
             'is_active' => $request->boolean('is_active'),
             'sort_order' => $request->sort_order ?? 0,
         ]);
+
+        if ($partner->is_active) {
+            FcmService::sendPartnerNotification($partner);
+        }
 
         return redirect()->route('admin.partners.index')->with('success', 'Partner berhasil ditambahkan');
     }

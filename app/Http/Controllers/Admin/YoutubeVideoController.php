@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\FcmService;
 use Illuminate\Http\Request;
 
 class YoutubeVideoController extends Controller
@@ -49,7 +50,7 @@ class YoutubeVideoController extends Controller
             'sort_order' => 'sometimes|integer|min:0',
         ]);
 
-        \App\Models\YoutubeVideo::create([
+        $video = \App\Models\YoutubeVideo::create([
             'title' => $validated['title'],
             'youtube_url' => $validated['youtube_url'],
             'description' => $validated['description'] ?? null,
@@ -57,6 +58,10 @@ class YoutubeVideoController extends Controller
             'is_active' => $request->boolean('is_active'),
             'sort_order' => $validated['sort_order'] ?? 0,
         ]);
+
+        if ($video->is_active) {
+            FcmService::sendVideoNotification($video);
+        }
 
         return redirect()->route('admin.youtube-videos.index')
             ->with('success', 'YouTube video berhasil ditambahkan!');

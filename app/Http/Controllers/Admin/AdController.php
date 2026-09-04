@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ad;
+use App\Services\FcmService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -60,7 +61,7 @@ class AdController extends Controller
             $imagePath = $filename;
         }
 
-        Ad::create([
+        $ad = Ad::create([
             'title' => $request->title,
             'link' => $request->link,
             'image' => $imagePath,
@@ -69,6 +70,10 @@ class AdController extends Controller
             'is_premium' => $request->boolean('is_premium'),
             'sort_order' => $request->sort_order ?? 0
         ]);
+
+        if ($ad->is_active) {
+            FcmService::sendAdNotification($ad);
+        }
 
         return redirect()->route('admin.ads.index')
             ->with('success', 'Iklan berhasil ditambahkan');
