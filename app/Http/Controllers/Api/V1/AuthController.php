@@ -39,14 +39,7 @@ class AuthController extends BaseApiController
 
         return $this->sendResponse([
             'token' => $token,
-            'user'  => [
-                'id'         => $user->id,
-                'name'       => $user->name,
-                'email'      => $user->email,
-                'role'       => $user->role,
-                'avatar'     => $user->avatar ? asset('storage/' . $user->avatar) : null,
-                'created_at' => $user->created_at?->toIso8601String(),
-            ],
+            'user'  => $this->formatUserResponse($user),
         ], 'Login berhasil! Selamat datang kembali.');
     }
 
@@ -97,12 +90,75 @@ class AuthController extends BaseApiController
             'user'  => [
                 'id'         => $user->id,
                 'name'       => $user->name,
-                'email'      => $user->email,
-                'role'       => $user->role,
-                'avatar'     => null,
-                'created_at' => $user->created_at?->toIso8601String(),
-            ],
+        return $this->sendResponse([
+            'token' => $token,
+            'user'  => $this->formatUserResponse($user),
         ], 'Pendaftaran akun berhasil! Selamat datang di Poros Kie Raha.', 201);
+    }
+
+    /**
+     * Google Single Sign-On (Direct Login / Register).
+     */
+    public function googleLogin(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name'      => 'required|string|max:255',
+            'email'     => 'required|string|email|max:255',
+            'google_id' => 'nullable|string|max:255',
+            'avatar'    => 'nullable|string|max:1000',
+        ], [
+            'name.required'  => 'Nama pengguna dari Google diperlukan.',
+            'email.required' => 'Email dari Google diperlukan.',
+            'email.email'    => 'Format email Google tidak valid.',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->sendError($validator->errors()->first(), 422, $validator->errors()->toArray());
+        }
+
+        $email = trim(strtolower($request->email));
+        $user = User::where('email', $email)->first();
+
+        if (!$user) {
+            // New user via Google: automatically verified without manual email verification
+            $user = User::create([
+                'name'        => $request->name,
+                'email'       => $email,
+                'password'    => Hash::make(\Illuminate\Support\Str::random(32)),
+                'role'        => 'user',
+                'avatar'      => $request->avatar,
+                'is_verified' => true,
+            ]);
+
+            // Auto subscribe to newsletter for news updates
+            try {
+                Newsletter::updateOrCreate(
+                    ['email' => $user->email],
+                    ['is_active' => true]
+                );
+            } catch (\Exception $e) {
+                // Ignore newsletter error
+            }
+        } else {
+            // Existing user: ensure marked as verified and sync avatar if empty
+            $updates = [];
+            if (!$user->is_verified) {
+                $updates['is_verified'] = true;
+            }
+            if (empty($user->avatar) && !empty($request->avatar)) {
+                $updates['avatar'] = $request->avatar;
+            }
+            if (!empty($updates)) {
+                $user->update($updates);
+            }
+        }
+
+        $token = self::generateToken($user);
+
+        return $this->sendResponse([
+            'token' => $token,
+            'user'  => $this->formatUserResponse($user),
+        ], 'Login dengan Google berhasil! Selamat datang, ' . $user->name . '.');
     }
 
     /**
@@ -117,14 +173,7 @@ class AuthController extends BaseApiController
         }
 
         return $this->sendResponse([
-            'user' => [
-                'id'         => $user->id,
-                'name'       => $user->name,
-                'email'      => $user->email,
-                'role'       => $user->role,
-                'avatar'     => $user->avatar ? asset('storage/' . $user->avatar) : null,
-                'created_at' => $user->created_at?->toIso8601String(),
-            ],
+            'user' => $this->formatUserResponse($user),
         ], 'Profil pengguna berhasil diambil');
     }
 
@@ -134,5 +183,29 @@ class AuthController extends BaseApiController
     public function logout(Request $request): JsonResponse
     {
         return $this->sendResponse(null, 'Logout berhasil.');
+    }
+
+    /**
+     * Format user array for API responses.
+     */
+    private function formatUserResponse(User $user): array
+    {
+        $avatar = null;
+        if (!empty($user->avatar)) {
+            if (filter_var($user->avatar, FILTER_VALIDATE_URL)) {
+                $avatar = $user->avatar;
+            } else {
+                $avatar = asset('storage/' . $user->avatar);
+            }
+        }
+
+        return [
+            'id'         => $user->id,
+            'name'       => $user->name,
+            'email'      => $user->email,
+            'role'       => $user->role,
+            'avatar'     => $avatar,
+            'created_at' => $user->created_at?->toIso8601String(),
+        ];
     }
 }

@@ -57,6 +57,7 @@ Route::prefix('v1')->middleware(['track.visitor'])->group(function () {
     Route::prefix('auth')->group(function () {
         Route::post('/login', [AuthController::class, 'login'])->name('api.v1.auth.login');
         Route::post('/register', [AuthController::class, 'register'])->name('api.v1.auth.register');
+        Route::post('/google', [AuthController::class, 'googleLogin'])->name('api.v1.auth.google');
         Route::get('/me', [AuthController::class, 'me'])->name('api.v1.auth.me');
         Route::post('/logout', [AuthController::class, 'logout'])->name('api.v1.auth.logout');
     });
